@@ -1,0 +1,36 @@
+name: OIDC Token Dumper
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      greeting:
+        description: "Greeting to echo"
+        required: false
+        type: string
+
+jobs:
+  # detect-env detects the reusable workflow's repository and ref for use later
+  # in the workflow.
+  oidc-dump:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Needed to detect the current reusable repository and ref.
+    steps:
+      - name: Request OIDC Token
+        run: |
+          # Need to base64-encode this to work-around GHA secret redaction
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN (base64-encoded)"
+          echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN | base64
+          # Request token
+          curl "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sigstore" \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            -H "Accept: application/json; api-version=2.0" \
+            -H "Content-Type: application/json" \
+            --silent | jq -r '.value' > oidc_token
+          echo -e "\nOIDC Token (base64-encoded)"
+          cat oidc_token | base64
+          echo -e "\nOIDC Token (decoded)"
+          cat oidc_token | jq -R 'split(".") | .[0],.[1] | @base64d | fromjson'
