@@ -1,0 +1,28 @@
+name: Reusable Publish
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      greeting:
+        description: "Greeting to echo"
+        required: false
+        type: string
+
+jobs:
+  # detect-env detects the reusable workflow's repository and ref for use later
+  # in the workflow.
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Needed to detect the current reusable repository and ref.
+      attestations: write
+    steps:
+      - name: Build Artifact
+        run: |
+          echo {{ inputs.greeting }} > artifact
+      - uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: artifact
