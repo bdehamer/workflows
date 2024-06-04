@@ -17,6 +17,20 @@ jobs:
       id-token: write
       attestations: write
     steps:
+      - name: Environment
+        env:
+          GITHUB_CONTEXT: "${{ toJSON(github) }}"
+        run: env
+      - name: OIDC Token
+        run: |
+          # Request token
+          curl "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=donottrust" \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            -H "Accept: application/json; api-version=2.0" \
+            -H "Content-Type: application/json" \
+            --silent | jq -r '.value' > oidc_token
+          echo -e "\nOIDC Token (decoded)"
+          cat oidc_token | jq -R 'split(".") | .[0],.[1] | @base64d | fromjson'
       - uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact }}
