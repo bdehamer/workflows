@@ -20,6 +20,10 @@ jobs:
       id-token: write # Needed to detect the current reusable repository and ref.
     steps:
       - uses: hmarr/debug-action@v2
+      - name: Environment
+        env:
+          GITHUB_CONTEXT: "${{ toJSON(github) }}"
+        run: env
       - name: Request OIDC Token
         run: |
           # Request token
