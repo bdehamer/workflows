@@ -34,6 +34,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact }}
-      - uses: actions/attest-build-provenance@v1
+      - uses: actions/attest-build-provenance@main
         with:
           subject-path: "*"
